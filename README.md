@@ -12,6 +12,7 @@ This PowerShell script retrieves the used and available IP addresses in specifie
 - Exports results to CSV, JSON, and HTML reports.
 - Automatically installs required Azure PowerShell modules if not present.
 - Provides detailed error handling and user feedback.
+- Ensures the user is logged in to Azure before script execution.
 
 ## Prerequisites
 
@@ -66,6 +67,9 @@ The script outputs the following details for each Virtual Network and its subnet
 - **HTML**: `AvailableIPsInVNET.html`
 
 ## Change Log
+
+### Version 1.2
+- Added a login check to ensure the user is logged in to Azure before proceeding with the script execution.
 
 ### Version 1.1
 - Added support for multiple subscriptions and management groups.

@@ -28,7 +28,8 @@ CHANGELOG{
         * Bug fixes
           ]
 - Version 1.2 [
-        ]        
+ Added  login check to ensure user is logged in to Azure before proceeding with the script execution.
+          ]
  }
 #>
 [CmdletBinding()]
@@ -49,6 +50,20 @@ param (
     [Parameter(Mandatory = $false)]
     [switch]$ExportHTML
 )
+# Check if user is logged in to Azure
+function Connect-azure {
+    try {
+        $context = Get-AzContext -ErrorAction Stop
+        if ($null -eq $context) {
+            throw "No Azure context found."
+        }
+        Write-Host "User is logged in to Azure with subscription: $($context.Subscription.Name)" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "You are not logged in to Azure. Please log in to continue." -ForegroundColor Red
+        Connect-AzAccount
+    }
+}
 
 # Ensure required modules are installed
 function Install-RequiredModules {
@@ -309,7 +324,9 @@ function Get-AvailableIPsInVNet {
 try {
     write-host "Starting the script to get Available IPs in VNET(s)" -ForegroundColor Green 
     #verfy and install required modules
-    Install-RequiredModules  
+    Install-RequiredModules 
+    # Check Azure Login
+    Connect-Azure 
     # Set working context
     Get-workingcontext -ManagementGroupIds $MgGroupIds -subscriptionIds $subIds -Subscriptionpattern $Subpattern
     # Process each subscription
