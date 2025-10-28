@@ -27,6 +27,8 @@ CHANGELOG{
         * Improved error handling and user feedback
         * Bug fixes
           ]
+- Version 1.2 [
+        ]        
  }
 #>
 [CmdletBinding()]
@@ -110,7 +112,7 @@ function Get-workingcontext {
             HelpMessage = "Enter one or many Subscriptions names or patterns to be separated by commas ','")]
         [Array] $Subscriptionpattern
     )
-    
+
     $Script:subscriptions = @()
     #  - Processing based on Supplied subscription Ids
     if ($subscriptionIds -ne '@all' -and -not ([string]::IsNullOrEmpty($subscriptionIds))) {
