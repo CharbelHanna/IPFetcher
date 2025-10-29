@@ -43,6 +43,9 @@ param (
     [Parameter( Mandatory = $false, 
         HelpMessage = "Enter one or many Subscriptions names or patterns to be separated by commas ','")]
     [Array] $Subpattern,
+    [parameter( Mandatory = $false,
+        HelpMessage = "select the desired location to store the extracted output")]
+    [string]$OutputFolder = $PSScriptRoot,
     [Parameter(Mandatory = $false)]
     [switch]$ExportCSV,
     [Parameter(Mandatory = $false)]
@@ -50,18 +53,33 @@ param (
     [Parameter(Mandatory = $false)]
     [switch]$ExportHTML
 )
+
+
+
+
+
 # Check if user is logged in to Azure
 function Connect-azure {
     try {
+        write-host "Checking Azure Login Status..." -ForegroundColor Cyan
         $context = Get-AzContext -ErrorAction Stop
         if ($null -eq $context) {
             throw "No Azure context found."
         }
+        if (!(Get-AzAccessToken -ErrorAction SilentlyContinue)) {
+            throw "Please authenticate to azure - Connect-AzAccount"
+}
         Write-Host "User is logged in to Azure with subscription: $($context.Subscription.Name)" -ForegroundColor Green
     }
     catch {
         Write-Host "You are not logged in to Azure. Please log in to continue." -ForegroundColor Red
-        Connect-AzAccount
+        if ($PSVersionTable.Platform -eq 'Unix') {
+            Connect-AzAccount -UseDeviceAuthentication
+        }
+        else {
+            Connect-AzAccount
+        }
+        
     }
 }
 
@@ -113,7 +131,6 @@ function Get-SubscriptionVariables {
         'Subscription.State' = $State
     }
 }
-
 # Function to construct The working context
 function Get-workingcontext {
     [CmdletBinding()]
@@ -193,7 +210,6 @@ function Get-workingcontext {
     }
     
 }
-
 # Function to get available IPs in a Virtual Network
 function Get-AvailableIPsInVNet {
     [CmdletBinding()]
@@ -319,6 +335,10 @@ function Get-AvailableIPsInVNet {
         
     }
 } 
+function Initialize-FileName {
+    $Today = Get-Date
+    $script:FileName = "AvailableIPsInVNET_$($Today.ToString("ddMMyyyy_HHmmss"))"
+}
 
 # Main script execution
 try {
@@ -327,6 +347,8 @@ try {
     Install-RequiredModules 
     # Check Azure Login
     Connect-Azure 
+    # Initialize File Name
+    Initialize-FileName
     # Set working context
     Get-workingcontext -ManagementGroupIds $MgGroupIds -subscriptionIds $subIds -Subscriptionpattern $Subpattern
     # Process each subscription
@@ -338,26 +360,26 @@ try {
     switch ($ExportCSV) {
         $true {
             Write-Host "Exporting report as CSV" -ForegroundColor Yellow 
-            $Script:results | Export-Csv -Path ".\AvailableIPsInVNET.csv" -NoTypeInformation -Encoding UTF8
-            Write-Host "CSV report exported to AvailableIPsInVNET.csv" -ForegroundColor Green
+            $Script:results | Export-Csv -Path "$outputfolder\$($script:FileName).csv" -NoTypeInformation -Encoding UTF8
+            Write-Host "CSV report exported to $outputfolder\$($script:FileName).csv" -ForegroundColor Green
         }
     }
     switch ($ExportJSON) {
         $true {
             Write-Host "Exporting report as JSON" -ForegroundColor Yellow 
-            $Script:results | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\AvailableIPsInVNET.json"
-            Write-Host "JSON report exported to AvailableIPsInVNET.json" -ForegroundColor Green
+            $Script:results | ConvertTo-Json -Depth 10 | Out-File -FilePath "$outputfolder\$($script:FileName).json"
+            Write-Host "JSON report exported to $outputfolder\$($script:FileName).json" -ForegroundColor Green
         }
     }
     switch ($ExportHTML) {
         $true {
             Write-Host "Exporting report as HTML" -ForegroundColor Yellow 
-            New-HTML -Title "Available IPs in VNET Report" -FilePath ".\AvailableIPsInVNET.html" {
+            New-HTML -Title "Available IPs in VNET Report" -FilePath "$outputfolder\$($script:FileName).html" {
                 New-HTMLSection -HeaderText "Available IPs in VNET Report" {
                     New-HTMLTable -DataTable $Script:results
                 }
             }
-            Write-Host "HTML report exported to AvailableIPsInVNET.html" -ForegroundColor Green
+            Write-Host "HTML report exported to $outputfolder\$($script:FileName).html" -ForegroundColor Green
         }
     }
     # Always show results in table
