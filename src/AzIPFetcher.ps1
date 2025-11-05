@@ -4,6 +4,7 @@
 #  Author: Charbel Hanna
 #  Version: 1.2.1
 #  Last Updated: (auto-generated)
+#  License: MIT License
 # ==========================================
 
 .SYNOPSIS
@@ -132,6 +133,7 @@ $ScriptPath   = $MyInvocation.MyCommand.Definition
 $LastUpdated  = (Get-Item $ScriptPath).LastWriteTime.ToString("yyyy-MM-dd")
 $Author        = "Charbel Hanna"
 $GitHubRepo    = "https://github.com/charbelhanna/AzIPFetcher"
+$License       = "MIT License"
 
 # Function to Print Banner
 function Print-Banner {
@@ -170,6 +172,7 @@ Write-Host ""
 Write-Host ("{0}Version:{1} {2}   {0}Last Updated:{1} {3}" -f $Cyan, $Reset, $ScriptVersion, $LastUpdated)
 Write-Host ("{0}Author:{1}  {2}" -f $Cyan, $Reset, $Author)
 Write-Host ("{0}GitHub:{1}  {2}" -f $Cyan, $Reset, $GitHubRepo)
+Write-Host ("{0}License:{1} {2}" -f $Cyan, $Reset, $License)
 Write-Host ""
 Write-Host ("{0}---------------------------------------------------------------{1}" -f $Gray, $Reset)
 Write-Host ""
